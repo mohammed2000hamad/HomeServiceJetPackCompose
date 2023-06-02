@@ -1,5 +1,7 @@
 package com.and.dev.homeservice.view.screen
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,19 +15,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.and.dev.homeservice.R
+import com.and.dev.homeservice.model.PreferenceManager
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(navMainController: NavController) {
 
+    val context = LocalContext.current
+
+    val preferenceManager = PreferenceManager(context)
+    val tokenCheck =preferenceManager.getToken().isNullOrBlank()
 
     LaunchedEffect(key1 = true) {
         delay(2570)
-        navMainController.navigate("OnBoardingScreen")
+
+        if (tokenCheck) {
+            preferenceManager.saveUserId(-1)
+            navMainController.navigate("OnBoardingScreen")
+
+        } else {
+            navigateToHomeScreen(context)
+        }
     }
 
 
@@ -55,4 +70,10 @@ fun SplashScreen(navMainController: NavController) {
 
     }
 }
+
+private fun navigateToHomeScreen(context: Context) {
+    val intent = Intent(context, HomeScreen::class.java).apply {}
+    context.startActivity(intent)
+}
+
 

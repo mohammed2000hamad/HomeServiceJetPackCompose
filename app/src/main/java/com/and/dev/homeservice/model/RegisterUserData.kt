@@ -1,11 +1,11 @@
 package com.and.dev.homeservice.model
 
-data class UserData(
-    val id: Int,
+
+data class RegisterUserData (
     val name: String,
     val email: String,
-    val photo: String,
     val phone: String,
     val active: String,
+    val type_user: String,
     val token: String
 )

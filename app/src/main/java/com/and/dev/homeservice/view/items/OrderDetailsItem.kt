@@ -15,9 +15,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.and.dev.homeservice.model.OrderRequestData
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Composable
-fun OrderDetailsItem() {
+fun OrderDetailsItem(model: OrderRequestData) {
 
 
     Card(
@@ -40,44 +46,56 @@ fun OrderDetailsItem() {
             verticalArrangement = Arrangement.Center
         ) {
 
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
 
                 Text(
-                    text = "Order #52001",
+                    text = "Order id:  ${model.id}",
                     style = TextStyle(
-                        fontFamily= FontFamily.Cursive,
+                        fontFamily = FontFamily.Cursive,
                         color = Color(0xFF488CE7),
-                        fontSize = 16.sp,
+                        fontSize = 12.sp,
                         textAlign = TextAlign.Start
                     ), modifier = Modifier
                         .padding(bottom = 6.dp)
-                        .weight(1f)
                 )
 
+
+                val inst: OffsetDateTime = OffsetDateTime.ofInstant(
+                    Instant.parse(model.createdAt.toString()),
+                    ZoneId.systemDefault()
+                )
+              val res =  DateTimeFormatter.ofPattern("MMM dd, yyyy").format(inst)
+
                 Text(
-                    text = "28 Nov 2019",
+                    text = "Date : $res",
                     style = TextStyle(
                         color = Color.Gray,
-                        fontFamily= FontFamily.Cursive,
-                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Cursive,
+                        fontSize = 8.sp,
                         textAlign = TextAlign.End
-                    ), modifier = Modifier.padding(bottom = 6.dp).align(alignment = Alignment.CenterVertically)
+                    ),
+                    modifier = Modifier
+                        .padding(bottom = 6.dp)
+                        .align(alignment = Alignment.CenterVertically)
+                        .weight(1f)
                 )
 
             }
 
 
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 32.dp)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 32.dp)
+            ) {
 
                 Text(
-                    text = "Service Type :",
+                    text = "Service Type : ${model.work?.name}",
                     style = TextStyle(
                         color = Color.Gray,
                         fontSize = 12.sp,
                         textAlign = TextAlign.Start,
-                                fontFamily= FontFamily.Cursive,
+                        fontFamily = FontFamily.Cursive,
 
                         ), modifier = Modifier.padding(bottom = 6.dp)
                 )
@@ -85,17 +103,19 @@ fun OrderDetailsItem() {
                 Text(
                     text = "Carpenter",
                     style = TextStyle(
-                        fontFamily= FontFamily.Cursive,
+                        fontFamily = FontFamily.Cursive,
 
                         color = Color(0xFF488CE7),
                         fontSize = 10.sp,
                         textAlign = TextAlign.Start
                     ), modifier = Modifier
                         .padding(bottom = 6.dp, start = 2.dp)
-                        .weight(1f).align(alignment = Alignment.CenterVertically)
+                        .weight(1f)
+                        .align(alignment = Alignment.CenterVertically)
                 )
 
             }
+
 
         }
     }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
@@ -35,11 +36,12 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.and.dev.homeservice.CustomButton
 import com.and.dev.homeservice.R
+import com.and.dev.homeservice.model.PreferenceManager
 import com.and.dev.homeservice.viewModel.LoginViewModel
 import kotlinx.coroutines.delay
-import kotlin.Result.*
 
 
 class LoginScreen : ComponentActivity() {
@@ -53,6 +55,38 @@ class LoginScreen : ComponentActivity() {
             Scaffold() {
                 val tabTitles = listOf("Service Provider", "Customer")
                 val selectedTab = remember { mutableStateOf(0) }
+                val loginViewModel: LoginViewModel = viewModel()
+
+                val context = LocalContext.current
+                val isLoggedIn by loginViewModel.isLoggedIn.collectAsState()
+                val error by loginViewModel.error.collectAsState()
+                val token by loginViewModel.theToken.collectAsState()
+                val userId by loginViewModel.userId.collectAsState()
+                val userPhone by loginViewModel.userPhone.collectAsState()
+
+
+                val preferenceManager = PreferenceManager(context)
+
+
+
+                if (isLoggedIn) {
+                    preferenceManager.saveToken(token = token)
+                    preferenceManager.saveUserId(userId = userId)
+                    preferenceManager.saveUserPhone(userPhone = userPhone)
+
+                    navigateToHomeScreen(context)
+                }
+
+                error?.let { errorMessage ->
+                    // Display the error message
+                    Toast.makeText(
+                        context,
+                        errorMessage,
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                }
+
 
 
                 Box(
@@ -168,254 +202,8 @@ class LoginScreen : ComponentActivity() {
                                                 animationSpec = TweenSpec(300) // Animation duration
                                             ),
                                         ) {
+                                            LoginScreenView(loginViewModel = loginViewModel)
 
-                                            val emailState =
-                                                remember { mutableStateOf(TextFieldValue()) }
-                                            val passwordState =
-                                                remember { mutableStateOf(TextFieldValue()) }
-                                            val rememberMeState = remember { mutableStateOf(false) }
-
-
-
-
-
-
-
-                                            Column(modifier = Modifier.padding(16.dp)) {
-                                                TextField(
-                                                    value = emailState.value,
-                                                    onValueChange = { emailState.value = it },
-
-                                                    label = {
-                                                        Text(
-                                                            "Email",
-                                                            Modifier.padding(2.dp),
-                                                            fontSize = 10.sp,
-                                                            fontFamily = FontFamily.Cursive,
-
-                                                            )
-                                                    },
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(top = 20.dp)
-                                                        .background(Color.LightGray)
-                                                        .border(
-                                                            BorderStroke(1.dp, Color(0xff346EDF)),
-                                                            shape = RoundedCornerShape(8.dp)
-                                                        ),
-                                                    colors = TextFieldDefaults.textFieldColors(
-                                                        backgroundColor = Color(0xFFF3F3F3),
-                                                        cursorColor = Color.Blue,
-                                                        focusedIndicatorColor = Color.Transparent,
-                                                        unfocusedIndicatorColor = Color.Transparent
-                                                    ),
-
-                                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                                                    textStyle = TextStyle(
-                                                        fontSize = 10.sp,
-                                                        fontFamily = FontFamily.Cursive,
-                                                        textAlign = TextAlign.Start
-                                                    )
-
-
-                                                )
-                                                Spacer(modifier = Modifier.height(16.dp))
-                                                TextField(
-                                                    value = passwordState.value,
-                                                    onValueChange = { passwordState.value = it },
-                                                    label = {
-                                                        Text(
-                                                            "Password",
-                                                            Modifier.padding(2.dp),
-                                                            Color.Gray,
-                                                            fontSize = 10.sp,
-                                                            fontFamily = FontFamily.Cursive,
-
-
-                                                            )
-                                                    },
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .background(Color.LightGray)
-                                                        .border(
-                                                            BorderStroke(1.dp, Color(0xff346EDF)),
-                                                            shape = RoundedCornerShape(8.dp)
-                                                        ),
-                                                    colors = TextFieldDefaults.textFieldColors(
-                                                        backgroundColor = Color(0xFFF3F3F3),
-                                                        cursorColor = Color.Blue,
-                                                        focusedIndicatorColor = Color.Transparent,
-                                                        unfocusedIndicatorColor = Color.Transparent
-                                                    ),
-
-                                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                                    visualTransformation = PasswordVisualTransformation(),
-                                                    textStyle = TextStyle(
-                                                        fontSize = 10.sp,
-                                                        fontFamily = FontFamily.Cursive,
-                                                        textAlign = TextAlign.Start
-                                                    )
-
-                                                )
-                                                Spacer(modifier = Modifier.height(16.dp))
-
-
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth(),
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.Start
-                                                ) {
-
-                                                    Checkbox(
-                                                        checked = rememberMeState.value,
-                                                        onCheckedChange = {
-                                                            rememberMeState.value = it
-                                                        },
-                                                        modifier = Modifier
-                                                            .padding(0.dp)
-                                                            .weight(1f),
-
-                                                        )
-
-
-                                                    Text(
-                                                        text = "Remember Me",
-                                                        color = Color.Black,
-                                                        style = MaterialTheme.typography.body1,
-                                                        fontSize = 12.sp,
-                                                        fontFamily = FontFamily.Cursive,
-
-
-                                                        )
-                                                    Spacer(
-                                                        modifier = Modifier
-                                                            .weight(1f)
-                                                            .fillMaxWidth()
-                                                    )
-
-                                                    Text(
-                                                        text = "Forgot Password?",
-                                                        fontSize = 10.sp,
-                                                        color = Color.Black,
-                                                        fontFamily = FontFamily.Cursive,
-                                                    )
-
-                                                }
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxWidth()
-                                                        .padding(
-                                                            top = 16.dp,
-                                                            start = 0.dp,
-                                                            end = 0.dp,
-                                                            bottom = 0.dp
-                                                        ),
-                                                    verticalAlignment = Alignment.CenterVertically
-
-                                                ) {
-                                                    Column(
-                                                        modifier = Modifier.weight(1f),
-                                                        horizontalAlignment = Alignment.Start
-                                                    ) {
-
-                                                        Text(
-                                                            text = "New Member? ",
-                                                            color = Color.Black,
-                                                            fontSize = 10.sp,
-                                                            fontFamily = FontFamily.Cursive,
-                                                        )
-
-                                                        val context = LocalContext.current
-
-
-                                                        TextButton(onClick = {
-                                                            navigateToRegisterScreen(
-                                                                context = context
-                                                            )
-                                                        }) {
-                                                            Text(
-                                                                text = "Sign up",
-                                                                fontSize = 16.sp,
-                                                                color = Color.Blue,
-                                                                fontFamily = FontFamily.Cursive,
-                                                                modifier = Modifier.padding(top = 1.dp),
-                                                                textAlign = TextAlign.Start,
-
-                                                                )
-                                                        }
-
-
-                                                    }
-
-
-                                                    CustomButton(
-                                                        onClick = {
-
-
-                                                        },
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .weight(1f)
-                                                            .height(64.dp),
-                                                        gradientColors = listOf(
-                                                            Color(0xff346EDF),
-                                                            Color(0xff6FC8FB)
-                                                        )
-                                                    ) {
-                                                        Text(
-                                                            text = "Login",
-                                                            fontSize = 16.sp,
-                                                            fontFamily = FontFamily.Cursive,
-                                                            color = Color.White,
-                                                            modifier = Modifier.padding(8.dp)
-                                                        )
-                                                    }
-
-
-                                                    val context = LocalContext.current
-
-
-                                                }
-
-
-
-                                                Row(
-                                                    modifier = Modifier
-                                                        .fillMaxSize()
-                                                        .weight(1f),
-                                                    horizontalArrangement = Arrangement.Center,
-                                                    verticalAlignment = Alignment.Bottom,
-
-                                                    ) {
-
-                                                    val context = LocalContext.current
-
-
-                                                    TextButton(onClick = {
-                                                        navigateToHomeScreen(
-                                                            context = context
-                                                        )
-                                                    }) {
-                                                        Text(
-                                                            text = "Get Start Now",
-                                                            fontSize = 18.sp,
-                                                            fontFamily = FontFamily.Cursive,
-                                                            color = Color.Black,
-                                                            modifier = Modifier.padding(8.dp)
-                                                        )
-
-                                                        Icon(
-                                                            imageVector = Icons.Default.ArrowForward,
-                                                            contentDescription = "icon",
-                                                            tint = Color.Black
-                                                        )
-
-                                                    }
-
-
-                                                }
-                                            }
                                         }
 
 
@@ -444,6 +232,244 @@ class LoginScreen : ComponentActivity() {
 
 @Composable
 fun LoginScreenView(loginViewModel: LoginViewModel) {
+
+
+    val emailState = remember { mutableStateOf(TextFieldValue()) }
+    val passwordState = remember { mutableStateOf(TextFieldValue()) }
+    val rememberMeState = remember { mutableStateOf(false) }
+
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        TextField(
+            value = emailState.value,
+            onValueChange = { emailState.value = it },
+
+            label = {
+                Text(
+                    "Email",
+                    Modifier.padding(2.dp),
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Cursive,
+
+                    )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp)
+                .background(Color.LightGray)
+                .border(
+                    BorderStroke(1.dp, Color(0xff346EDF)), shape = RoundedCornerShape(8.dp)
+                ),
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color(0xFFF3F3F3),
+                cursorColor = Color.Blue,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            textStyle = TextStyle(
+                fontSize = 10.sp, fontFamily = FontFamily.Cursive, textAlign = TextAlign.Start
+            )
+
+
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        TextField(
+            value = passwordState.value,
+            onValueChange = { passwordState.value = it },
+            label = {
+                Text(
+                    "Password",
+                    Modifier.padding(2.dp),
+                    Color.Gray,
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Cursive,
+
+
+                    )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.LightGray)
+                .border(
+                    BorderStroke(1.dp, Color(0xff346EDF)), shape = RoundedCornerShape(8.dp)
+                ),
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = Color(0xFFF3F3F3),
+                cursorColor = Color.Blue,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent
+            ),
+
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation(),
+            textStyle = TextStyle(
+                fontSize = 10.sp, fontFamily = FontFamily.Cursive, textAlign = TextAlign.Start
+            )
+
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Start
+        ) {
+
+            Checkbox(
+                checked = rememberMeState.value,
+                onCheckedChange = {
+                    rememberMeState.value = it
+                },
+                modifier = Modifier
+                    .padding(0.dp)
+                    .weight(1f),
+
+                )
+
+
+            Text(
+                text = "Remember Me",
+                color = Color.Black,
+                style = MaterialTheme.typography.body1,
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Cursive,
+
+
+                )
+            Spacer(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            )
+
+            Text(
+                text = "Forgot Password?",
+                fontSize = 10.sp,
+                color = Color.Black,
+                fontFamily = FontFamily.Cursive,
+            )
+
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(
+                    top = 16.dp, start = 0.dp, end = 0.dp, bottom = 0.dp
+                ), verticalAlignment = Alignment.CenterVertically
+
+        ) {
+            Column(
+                modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start
+            ) {
+
+                Text(
+                    text = "New Member? ",
+                    color = Color.Black,
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Cursive,
+                )
+
+                val context = LocalContext.current
+
+
+                TextButton(onClick = {
+                    navigateToRegisterScreen(
+                        context = context
+                    )
+                }) {
+                    Text(
+                        text = "Sign up",
+                        fontSize = 16.sp,
+                        color = Color.Blue,
+                        fontFamily = FontFamily.Cursive,
+                        modifier = Modifier.padding(top = 1.dp),
+                        textAlign = TextAlign.Start,
+
+                        )
+                }
+
+
+            }
+
+
+
+
+
+            CustomButton(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .height(64.dp),
+                gradientColors = listOf(
+                    Color(0xff346EDF), Color(0xff6FC8FB)
+                ),
+                onClick = {
+
+                    val email = emailState.value.text
+                    val password = passwordState.value.text
+
+
+                    loginViewModel.login(
+                        email = email,
+                        password = password
+                    )
+
+
+                },
+            ) {
+                Text(
+                    text = "Login",
+                    fontSize = 16.sp,
+                    fontFamily = FontFamily.Cursive,
+                    color = Color.White,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+
+        }
+
+
+
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.Bottom,
+
+            ) {
+
+            val context = LocalContext.current
+
+
+            TextButton(onClick = {
+                navigateToHomeScreen(
+                    context = context
+                )
+            }) {
+                Text(
+                    text = "Get Start Now",
+                    fontSize = 18.sp,
+                    fontFamily = FontFamily.Cursive,
+                    color = Color.Black,
+                    modifier = Modifier.padding(8.dp)
+                )
+
+                Icon(
+                    imageVector = Icons.Default.ArrowForward,
+                    contentDescription = "icon",
+                    tint = Color.Black
+                )
+
+            }
+
+
+        }
+    }
 
 
 }
@@ -475,8 +501,7 @@ fun ServiceProviderView() {
                 .padding(top = 20.dp)
                 .background(Color.LightGray)
                 .border(
-                    BorderStroke(1.dp, Color(0xff346EDF)),
-                    shape = RoundedCornerShape(8.dp)
+                    BorderStroke(1.dp, Color(0xff346EDF)), shape = RoundedCornerShape(8.dp)
                 ),
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color(0xFFF3F3F3),
@@ -487,9 +512,7 @@ fun ServiceProviderView() {
 
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             textStyle = TextStyle(
-                fontSize = 10.sp,
-                fontFamily = FontFamily.Cursive,
-                textAlign = TextAlign.Start
+                fontSize = 10.sp, fontFamily = FontFamily.Cursive, textAlign = TextAlign.Start
             )
 
         )
@@ -510,8 +533,7 @@ fun ServiceProviderView() {
                 .fillMaxWidth()
                 .background(Color.LightGray)
                 .border(
-                    BorderStroke(1.dp, Color(0xff346EDF)),
-                    shape = RoundedCornerShape(8.dp)
+                    BorderStroke(1.dp, Color(0xff346EDF)), shape = RoundedCornerShape(8.dp)
                 ),
             colors = TextFieldDefaults.textFieldColors(
                 backgroundColor = Color(0xFFF3F3F3),
@@ -523,17 +545,14 @@ fun ServiceProviderView() {
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation(),
             textStyle = TextStyle(
-                fontSize = 10.sp,
-                fontFamily = FontFamily.Cursive,
-                textAlign = TextAlign.Start
+                fontSize = 10.sp, fontFamily = FontFamily.Cursive, textAlign = TextAlign.Start
             )
         )
         Spacer(modifier = Modifier.height(16.dp))
 
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
@@ -572,8 +591,7 @@ fun ServiceProviderView() {
                 .fillMaxWidth()
                 .padding(
                     top = 16.dp, start = 0.dp, end = 0.dp, bottom = 0.dp
-                ),
-            verticalAlignment = Alignment.CenterVertically
+                ), verticalAlignment = Alignment.CenterVertically
 
         ) {
             Column(
@@ -610,14 +628,15 @@ fun ServiceProviderView() {
                     .weight(1f)
                     .height(64.dp),
                 gradientColors = listOf(
-                    Color(0xff346EDF),
-                    Color(0xff6FC8FB)
+                    Color(0xff346EDF), Color(0xff6FC8FB)
                 )
             ) {
                 Text(
-                    text = "Login", fontSize = 16.sp,
+                    text = "Login",
+                    fontSize = 16.sp,
                     fontFamily = FontFamily.Cursive,
-                    color = Color.White, modifier = Modifier.padding(8.dp)
+                    color = Color.White,
+                    modifier = Modifier.padding(8.dp)
                 )
             }
 
@@ -635,9 +654,11 @@ fun ServiceProviderView() {
 
             TextButton(onClick = { navigateToHomeScreen(context = context) }) {
                 Text(
-                    text = "Get Start Now", fontSize = 18.sp,
+                    text = "Get Start Now",
+                    fontSize = 18.sp,
                     fontFamily = FontFamily.Cursive,
-                    color = Color.Black, modifier = Modifier.padding(top = 1.dp)
+                    color = Color.Black,
+                    modifier = Modifier.padding(top = 1.dp)
                 )
 
                 Icon(
@@ -655,14 +676,12 @@ fun ServiceProviderView() {
 }
 
 private fun navigateToHomeScreen(context: Context) {
-    val intent = Intent(context, HomeScreen::class.java).apply {
-    }
+    val intent = Intent(context, HomeScreen::class.java).apply {}
     context.startActivity(intent)
 }
 
 private fun navigateToRegisterScreen(context: Context) {
-    val intent = Intent(context, RegisterScreen::class.java).apply {
-    }
+    val intent = Intent(context, RegisterScreen::class.java).apply {}
     context.startActivity(intent)
 }
 

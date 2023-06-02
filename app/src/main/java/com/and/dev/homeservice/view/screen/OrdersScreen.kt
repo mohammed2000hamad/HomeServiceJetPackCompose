@@ -1,8 +1,14 @@
 package com.and.dev.homeservice.view.screen
 
 
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -10,13 +16,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.and.dev.homeservice.model.PreferenceManager
 import com.and.dev.homeservice.view.items.OrderDetailsItem
+import com.and.dev.homeservice.viewModel.GetCompleteOrders
+import com.and.dev.homeservice.viewModel.GetPendingOrdersViewModel
+import com.and.dev.homeservice.viewModel.GetUnCompleteOrders
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.pagerTabIndicatorOffset
@@ -27,9 +39,11 @@ import kotlinx.coroutines.launch
 data class TabRowItem(
     val title: String,
     val screen: @Composable () -> Unit,
-)
+
+    )
 
 val tabRowItems = listOf(
+
     TabRowItem(
         title = "Pending",
         screen = { PendingOrder() },
@@ -117,18 +131,136 @@ fun OrdersScreen() {
 @Composable
 fun PendingOrder() {
 
-    OrderDetailsItem()
+    val viewModel: GetPendingOrdersViewModel = viewModel()
+    val listModel = viewModel.listPendingOrdersLiveData
+    val context = LocalContext.current
+    val pref = PreferenceManager(context)
+
+    val token = pref.getToken()
+
+
+    if (!token.isNullOrBlank()) {
+
+        viewModel.getPendingOrders(token.toString())
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(1),
+            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 20.dp, bottom = 55.dp)
+        ) {
+
+
+            itemsIndexed(items = listModel) { index, item ->
+                OrderDetailsItem(model = item)
+            }
+
+
+        }
+    } else {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(color = Color.White)
+        ) {
+
+        }
+        Toast.makeText(context, "Please Login to show your order", Toast.LENGTH_SHORT)
+            .show()
+    }
+
+
 }
 
 @Composable
 fun CompletedOrder() {
-    Text(text = "13333222211")
 
+
+    val viewModel: GetCompleteOrders = viewModel()
+    val listModel = viewModel.listCompleteOrderLiveData
+    val context = LocalContext.current
+
+    val pref = PreferenceManager(context)
+
+    val token = pref.getToken()
+
+
+    if (!token.isNullOrBlank()) {
+
+        viewModel.getCompleteOrders(token.toString())
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(1),
+            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 20.dp, bottom = 55.dp)
+        ) {
+
+
+            itemsIndexed(items = listModel) { index, item ->
+                OrderDetailsItem(model = item)
+            }
+
+
+        }
+    } else {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(color = Color.White)
+        ) {
+
+        }
+        Toast.makeText(context, "Please Login to show your order", Toast.LENGTH_SHORT)
+            .show()
+    }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun UnderwayOrder() {
-    Text(text = "113331")
+    val viewModel: GetUnCompleteOrders = viewModel()
+    val listModel = viewModel.listUnCompleteOrderLiveData
+    val context = LocalContext.current
+    val pref = PreferenceManager(context)
 
+    val token = pref.getToken()
+
+
+
+
+
+
+    if (!token.isNullOrBlank()) {
+        viewModel.getUnCompleteOrders(token.toString())
+
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(1),
+            contentPadding = PaddingValues(16.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 20.dp, bottom = 55.dp)
+        ) {
+
+
+            itemsIndexed(items = listModel) { index, item ->
+                OrderDetailsItem(model = item)
+            }
+
+
+        }
+    } else {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(color = Color.White)
+        ) {
+
+        }
+        Toast.makeText(context, "Please Login to show your order", Toast.LENGTH_SHORT)
+            .show()
+    }
 }
 

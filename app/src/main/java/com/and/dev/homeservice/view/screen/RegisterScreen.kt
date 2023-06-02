@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
@@ -33,8 +34,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.and.dev.homeservice.CustomButton
+import com.and.dev.homeservice.model.PreferenceManager
 import com.and.dev.homeservice.view.items.CustomDropdownMenu
 import com.and.dev.homeservice.viewModel.AllWorkViewModel
+import com.and.dev.homeservice.viewModel.RegisterViewModel
 import kotlinx.coroutines.delay
 
 
@@ -44,7 +47,41 @@ class RegisterScreen : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
 
-            RegisterScreenView()
+            Scaffold() {
+                val registerViewModel: RegisterViewModel = viewModel()
+                val isRegistered by registerViewModel.isRegistered.collectAsState()
+                val error by registerViewModel.error.collectAsState()
+                val token by registerViewModel.theToken.collectAsState()
+                val userId by registerViewModel.userId.collectAsState()
+                val userPhone by registerViewModel.userPhone.collectAsState()
+
+
+                val context = LocalContext.current
+
+                val preferenceManager = PreferenceManager(context)
+
+
+                if (isRegistered) {
+                    preferenceManager.saveToken(token = token)
+                    preferenceManager.saveUserId(userId = userId)
+                    preferenceManager.saveUserPhone(userPhone = userPhone)
+
+                   preferenceManager.saveToken(token)
+                    navigateTHomeScreen(context)
+                }
+
+                error?.let { errorMessage ->
+                    // Display the error message
+                    Toast.makeText(
+                        context,
+                        errorMessage,
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                }
+
+                RegisterScreenView(registerViewModel)
+            }
         }
 
 
@@ -56,7 +93,7 @@ class RegisterScreen : ComponentActivity() {
 }
 
 @Composable
-fun RegisterScreenView() {
+fun RegisterScreenView(viewModel: RegisterViewModel) {
 
     val tabTitles = listOf("Service Provider", "Customer")
     val selectedTab = remember { mutableStateOf(0) }
@@ -197,7 +234,7 @@ fun RegisterScreenView() {
                                     animationSpec = TweenSpec(300) // Animation duration
                                 ),
                             ) {
-                                CustomerRegisterView()
+                                CustomerRegisterView(viewModel)
                             }
 
 
@@ -214,7 +251,7 @@ fun RegisterScreenView() {
 }
 
 @Composable
-fun CustomerRegisterView() {
+fun CustomerRegisterView(viewModel: RegisterViewModel) {
 
 
     val emailState = remember { mutableStateOf(TextFieldValue()) }
@@ -222,6 +259,7 @@ fun CustomerRegisterView() {
     val fullNameState = remember { mutableStateOf(TextFieldValue()) }
     val phoneNumberState = remember { mutableStateOf(TextFieldValue()) }
     val rememberMeState = remember { mutableStateOf(false) }
+
 
 
 
@@ -449,12 +487,17 @@ fun CustomerRegisterView() {
 
             }
 
-            val context = LocalContext.current
 
 
 
             CustomButton(
                 onClick = {
+                    val name = fullNameState.value.text
+                    val email = emailState.value.text
+                    val password = passwordState.value.text
+                    val phone = phoneNumberState.value.text
+
+                    viewModel.register(name, email, password, phone)
 
                 },
                 modifier = Modifier
@@ -749,6 +792,11 @@ fun ServiceRegisterView() {
 
 private fun navigateToLoginScreen(context: Context) {
     val intent = Intent(context, LoginScreen::class.java).apply {}
+    context.startActivity(intent)
+}
+
+private fun navigateTHomeScreen(context: Context) {
+    val intent = Intent(context, HomeScreen::class.java).apply {}
     context.startActivity(intent)
 }
 

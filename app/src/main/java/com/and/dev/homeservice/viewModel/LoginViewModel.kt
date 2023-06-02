@@ -1,41 +1,57 @@
 package com.and.dev.homeservice.viewModel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import android.service.autofill.UserData
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.and.dev.homeservice.apiService.ApiService
-import com.and.dev.homeservice.model.UserData
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+class LoginViewModel : ViewModel() {
+    private val apiService: ApiService = ApiService.geInstance()
+    private val _isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
+    private val _error = MutableStateFlow<String?>(null)
+    private val _isToken = MutableStateFlow("")
+    private val _userId = MutableStateFlow(-1)
+    val userId: StateFlow<Int> = _userId.asStateFlow()
+    val theToken: StateFlow<String> = _isToken.asStateFlow()
+    private val _userPhone = MutableStateFlow("")
+    val userPhone: StateFlow<String> = _isToken.asStateFlow()
 
-class LoginViewModel(private val apiService: ApiService) : ViewModel() {
-    private val _loginResult = MutableLiveData<Result<UserData>>()
-    val loginResult: LiveData<Result<UserData>> get() = _loginResult
-
+    val error: StateFlow<String?> = _error.asStateFlow()
     fun login(email: String, password: String) {
         viewModelScope.launch {
             try {
                 val response = apiService.login(email, password)
-                if (response.isSuccessful) {
-                    val userData = response.body()?.data
-                    if (userData != null) {
-                        _loginResult.value = Result.success(userData)
-                    } else {
-                        _loginResult.value = Result.failure(Exception("Invalid response data"))
+                if (response.code() == 200) {
+                    val loginResponse = response.body()
+                    if (loginResponse?.success == true) {
+                        _isLoggedIn.emit(true)
+                        _isToken.emit(loginResponse.data.token)
+                        _userId.emit(loginResponse.data.id)
+                        _userPhone.emit(loginResponse.data.phone)
 
+
+
+                    } else {
+                        _error.emit( loginResponse?.message)
                     }
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    _loginResult.value = Result.failure(Exception(errorBody))
+                    _error.emit(  response.message())
+
                 }
             } catch (e: Exception) {
-                _loginResult.value = Result.failure(e)
+                _error.emit(  e.message)
+
             }
+
         }
     }
-
-
 }
 
 

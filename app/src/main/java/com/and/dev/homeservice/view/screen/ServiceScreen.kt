@@ -3,6 +3,7 @@ package com.and.dev.homeservice.view.screen
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.and.dev.homeservice.R
+import com.and.dev.homeservice.model.PreferenceManager
 import com.and.dev.homeservice.view.items.ItemWorkServiceCard
 import com.and.dev.homeservice.viewModel.AllWorkViewModel
 
@@ -102,13 +104,23 @@ fun ServiceScreen() {
             itemsIndexed(items = listModel) { index, item ->
                 ItemWorkServiceCard(model = item, onItemClick = {
 
-                    item.id?.let {
-                        navigateToCreateOrderClass(
-                            context = context,
-                            it,
-                            itemName = item.name.toString()
-                        )
+                    val preferenceManager = PreferenceManager(context)
+                    val userId = preferenceManager.getUserID()
+
+                    if (userId!=-1) {
+                        item.id?.let {
+                            navigateToCreateOrderClass(
+                                context = context,
+                                it,
+                                itemName = item.name.toString()
+                            )
+                        }
+                    } else {
+                        Toast.makeText(context, "Please Login to Create order", Toast.LENGTH_LONG)
+                            .show()
+                        navigateToLoginScreen(context)
                     }
+
                 })
 
             }
@@ -123,6 +135,13 @@ private fun navigateToCreateOrderClass(context: Context, itemId: Int, itemName: 
     val intent = Intent(context, CreateOrderScreen::class.java).apply {
         putExtra("itemId", itemId)
         putExtra("itemName", itemName)
+    }
+    context.startActivity(intent)
+}
+
+private fun navigateToLoginScreen(context: Context) {
+    val intent = Intent(context, LoginScreen::class.java).apply {
+
     }
     context.startActivity(intent)
 }

@@ -1,5 +1,7 @@
 package com.and.dev.homeservice.view.screen
 
+import android.content.Context
+import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -29,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.and.dev.homeservice.R
+import com.and.dev.homeservice.model.PreferenceManager
 
 @Composable
 fun UserScreen() {
@@ -47,11 +51,50 @@ fun UserScreen() {
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(top = 100.dp), shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
+                .padding(top = 120.dp), shape = RoundedCornerShape(topStart = 50.dp, topEnd = 50.dp)
         ) {
 
-            Column(modifier = Modifier.padding(top = 50.dp, start = 16.dp, end = 16.dp)) {
 
+            Column(modifier = Modifier.padding(top = 50.dp)) {
+
+
+                Text(
+                    text = "Mohammed Hamad Mushtaha",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontFamily = FontFamily.Monospace,
+                        textAlign = TextAlign.Start,
+                        color = Color.Black
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.CenterHorizontally)
+                        .padding(bottom = 4.dp, top = 4.dp)
+                )
+
+                Text(
+                    text = "Gaza.Palestine 970",
+                    style = TextStyle(
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        textAlign = TextAlign.Start,
+                        color = Color(0xAE6D6D6D)
+                    ),
+                    modifier = Modifier
+                        .align(alignment = Alignment.CenterHorizontally).
+                            padding(bottom = 16.dp)
+                )
+                Spacer(
+                    modifier = Modifier
+                        .height(8.dp)
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Color(0x80346EDF), Color(0x806FC8FB)),
+                                startX = 0f,
+                                endX = Float.POSITIVE_INFINITY
+                            )
+                        )
+                )
 
                 Row(
                     Modifier
@@ -150,7 +193,7 @@ fun UserScreen() {
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(start = 16.dp, end = 16.dp, top = 20.dp)
+                        .padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 16.dp)
                 ) {
 
                     Text(
@@ -172,15 +215,33 @@ fun UserScreen() {
                         tint = Color.Gray,
                         modifier = Modifier
                             .width(16.dp)
-                            .height(16.dp).padding(start = 6.dp)
+                            .height(16.dp)
                             .align(alignment = Alignment.CenterVertically)
                     )
 
                 }
 
+                Spacer(
+                    modifier = Modifier
+                        .height(8.dp)
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                colors = listOf(Color(0x80346EDF), Color(0x806FC8FB)),
+                                startX = 0f,
+                                endX = Float.POSITIVE_INFINITY
+                            )
+                        )
+                )
 
+
+                val context = LocalContext.current
+                val preferenceManager = PreferenceManager(context)
                 TextButton(
-                    onClick = { },
+                    onClick = {
+                        preferenceManager.deleteToken()
+                        navigateToLoginScreen(context)
+                    },
                     Modifier
                         .padding(top = 32.dp)
                         .align(alignment = Alignment.CenterHorizontally)
@@ -210,11 +271,11 @@ fun UserScreen() {
             modifier = Modifier
                 .align(TopCenter)
                 .offset(x = 0.dp, y = overlayBoxHeight)
-                .width(100.dp)
-                .height(100.dp)
+                .width(120.dp)
+                .height(120.dp)
                 .clip(CircleShape)
                 .border(
-                    BorderStroke(4.dp, Color.Blue),
+                    BorderStroke(4.dp, Color(0xFF43A047)),
                     CircleShape
                 )
                 .padding(4.dp)
@@ -224,6 +285,11 @@ fun UserScreen() {
     }
 
 
+}
+
+private fun navigateToLoginScreen(context: Context) {
+    val intent = Intent(context, LoginScreen::class.java).apply {}
+    context.startActivity(intent)
 }
 
 
