@@ -22,12 +22,12 @@ class PreferenceManager(private val context: Context) {
 
     }
 
-    fun deleteUserId(userId: Int) {
+    fun deleteUserId() {
         sharedPreferences.edit().remove(KEY_USER_ID).apply()
 
     }
 
-    fun deleteUserUserPhone(userPhone: String) {
+    fun deleteUserUserPhone() {
         sharedPreferences.edit().remove(KEY_USER_PHONE).apply()
 
     }

@@ -21,7 +21,7 @@ class LoginViewModel : ViewModel() {
     val userId: StateFlow<Int> = _userId.asStateFlow()
     val theToken: StateFlow<String> = _isToken.asStateFlow()
     private val _userPhone = MutableStateFlow("")
-    val userPhone: StateFlow<String> = _isToken.asStateFlow()
+    val userPhone: StateFlow<String> = _userPhone.asStateFlow()
 
     val error: StateFlow<String?> = _error.asStateFlow()
     fun login(email: String, password: String) {

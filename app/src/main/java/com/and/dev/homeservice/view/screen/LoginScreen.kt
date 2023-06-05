@@ -69,6 +69,7 @@ class LoginScreen : ComponentActivity() {
 
 
 
+
                 if (isLoggedIn) {
                     preferenceManager.saveToken(token = token)
                     preferenceManager.saveUserId(userId = userId)

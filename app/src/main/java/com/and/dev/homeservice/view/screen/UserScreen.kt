@@ -240,6 +240,8 @@ fun UserScreen() {
                 TextButton(
                     onClick = {
                         preferenceManager.deleteToken()
+                        preferenceManager.deleteUserId()
+                        preferenceManager.deleteUserUserPhone()
                         navigateToLoginScreen(context)
                     },
                     Modifier

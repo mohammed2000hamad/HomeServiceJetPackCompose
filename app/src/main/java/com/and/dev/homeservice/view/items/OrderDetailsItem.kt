@@ -64,7 +64,8 @@ fun OrderDetailsItem(model: OrderRequestData) {
                     Instant.parse(model.createdAt.toString()),
                     ZoneId.systemDefault()
                 )
-              val res =  DateTimeFormatter.ofPattern("MMM dd, yyyy").format(inst)
+
+                val res =  DateTimeFormatter.ofPattern("MMM dd, yyyy").format(inst)
 
                 Text(
                     text = "Date : $res",

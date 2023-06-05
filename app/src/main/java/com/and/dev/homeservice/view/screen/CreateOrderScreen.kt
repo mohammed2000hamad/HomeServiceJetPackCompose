@@ -36,6 +36,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LifecycleRegistry
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -46,6 +47,9 @@ import com.and.dev.homeservice.ui.theme.HomeServiceTheme
 import com.and.dev.homeservice.viewModel.CreateOrderViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 
 
@@ -69,36 +73,50 @@ class CreateOrderScreen : ComponentActivity(), LifecycleOwner {
 
             val preferenceManager = PreferenceManager(context)
             val userId = preferenceManager.getUserID()
-            val userPhone = preferenceManager.getUserPhone()
 
 
-            createOrderViewModel.newOrderRequestResponse.observe(this) { response ->
 
-                if (response.success == true) {
-                    Toast.makeText(this, "Order Created Successfully", Toast.LENGTH_LONG).show()
-                    navController.navigate("createOrderDone")
-                } else {
-                    Toast.makeText(
-                        this,
-                        "Error : ${response.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                }
-            }
-
-            createOrderViewModel.error.observe(this) { errorMessage ->
-                Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show()
-
-            }
 
 
             HomeServiceTheme {
 
-
                 NavHost(navController, startDestination = "createOrderProblemDetailsScreen") {
+
+
+                    composable("createOrderDone") {
+                        CreateOrderDone(navController)
+                    }
+
                     composable("createOrderProblemDetailsScreen") {
+
+
+
+
                         if (itemName != null) {
+                            val userPhone = preferenceManager.getUserPhone()
+
+                            createOrderViewModel.newOrderRequestResponse.observe(this@CreateOrderScreen) { response ->
+
+                                if (response.success == true) {
+                                    navController.navigate("createOrderDone")
+                                } else {
+                                    Toast.makeText(
+                                        this@CreateOrderScreen,
+                                        "Error : ${response.message}",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+
+                                }
+                            }
+
+                            createOrderViewModel.error.observe(this@CreateOrderScreen) { errorMessage ->
+                                Toast.makeText(
+                                    this@CreateOrderScreen,
+                                    errorMessage,
+                                    Toast.LENGTH_LONG
+                                ).show()
+
+                            }
                             CreateOrderProblemDetailsScreen(
                                 navController = navController,
                                 itemId = itemId,
@@ -107,22 +125,13 @@ class CreateOrderScreen : ComponentActivity(), LifecycleOwner {
                                 userPhone = userPhone.toString(), viewModel = createOrderViewModel
                             )
                         } else {
-                            CreateOrderProblemDetailsScreen(
-                                navController = navController,
-                                itemId = itemId,
-                                itemName = "Service",
-                                userId = userId,
-                                userPhone = userPhone.toString(), viewModel = createOrderViewModel
-
-                            )
+                            Toast.makeText(context, "No Service Name", Toast.LENGTH_LONG).show()
                         }
+
                     }
-                    composable("createOrderDone") {
-                        CreateOrderDone()
-                    }
+
+
                 }
-
-
             }
         }
     }
@@ -161,7 +170,7 @@ class CreateOrderScreen : ComponentActivity(), LifecycleOwner {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CreateOrderProblemDetailsScreen(
-    navController: NavController,
+    navController: NavHostController,
     itemId: Int,
     userId: Int,
     userPhone: String,
@@ -319,19 +328,19 @@ fun CreateOrderProblemDetailsScreen(
         }
 
 
-//            GoogleMap(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(200.dp)
-//                    .padding(16.dp),
-//                cameraPositionState = cameraPositionState
-//            ) {
-//                Marker(
-//                    state = MarkerState(position = singapore),
-//                    title = "London",
-//                    snippet = "Marker in Big Ben"
-//                )
-//            }
+        GoogleMap(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(16.dp),
+            cameraPositionState = cameraPositionState
+        ) {
+            Marker(
+                state = MarkerState(position = singapore),
+                title = "London",
+                snippet = "Marker in Big Ben"
+            )
+        }
 
 
         Box(
@@ -421,7 +430,7 @@ fun CreateOrderProblemDetailsScreen(
 }
 
 @Composable
-fun CreateOrderDone() {
+fun CreateOrderDone(navController: NavController) {
 
     Box(
         modifier = Modifier
