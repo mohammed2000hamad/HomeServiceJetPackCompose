@@ -17,7 +17,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAX4st5cDX_HFKcntvnBkRUEjguzk2YVZs" />
+            android:value="Enter_your_google_api_Key" />
 
         <activity
             android:name=".view.screen.CreateOrderScreen"
